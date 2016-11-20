@@ -42,6 +42,7 @@ function pause() {
     $(".lobby").text(lobby);
     $(".lobby").attr("href", "http://tenhou.net/0/?" + lobby);
 	  updateUnconfirmations();
+    updateResults();
 }
 
 function playp() {
@@ -217,9 +218,9 @@ function updateStatus() {
 					case "announce": break;
 					case "registration": updateApplications(); break;
           case "wait": updateConfirmations(); break;
+          case "pause":
           case "playpart": updateUnconfirmations();
           case "playall": updateResults(); break;
-          case "pause": updateUnconfirmations(); break;
           case "end": break;
 				}
 			}
