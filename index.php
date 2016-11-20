@@ -198,10 +198,10 @@ Flight::route('POST /api/initial_state', function() {
   $gamesData = $conn->query("SELECT id, round, board, player_id FROM results");
   //$wishData = $conn->query("SELECT id, who, withWhom FROM wish");
 
-  if (!$playersData || !$gamesData ) {
+  if (!$playersData || !$gamesData) {
     Flight::json(['status' => 'error', 'error' => 'query_failed']);
   } else {
-    Flight::json(['status' => 'ok','data' => ['players' => $playersData->fetchAll(), 'games' => $gamesData->fetchAll(), 'wish' => $wishData->fetchAll()]]);
+    Flight::json(['status' => 'ok','data' => ['players' => $playersData->fetchAll(), 'games' => $gamesData->fetchAll()]]);
   }
 });
 
