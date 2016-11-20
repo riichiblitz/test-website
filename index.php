@@ -8,7 +8,7 @@ $dbhost = getenv('OPENSHIFT_MYSQL_DB_HOST');
 $dbport = getenv('OPENSHIFT_MYSQL_DB_PORT');
 $dbusername = getenv('OPENSHIFT_MYSQL_DB_USERNAME');
 $dbpassword = getenv('OPENSHIFT_MYSQL_DB_PASSWORD');
-$db_name = "new_blitz_test";//getenv('OPENSHIFT_GEAR_NAME');
+$db_name = getenv('OPENSHIFT_GEAR_NAME');
 
 $player_per_table = 4;
 
