@@ -39,7 +39,7 @@ th {
 	padding-bottom: 2px;
 }
 
-#contacts,#message {
+#contacts,#message,#replay_url {
 	width:450px;
 	padding-top: 2px;
 	padding-bottom: 2px;
@@ -55,7 +55,7 @@ th {
 }
 
 
-.register_form,.report_form {
+.register_form,.report_form,.replay_form {
 	width:460px;
 	text-align:left;
     margin-left:auto;
@@ -98,11 +98,20 @@ th {
 		vertical-align:center;
 }
 
-.rounds_table {
+.round_table {
 	table-layout:fixed;
     margin-left:auto;
     margin-right:auto;
 	width:auto;
+}
+
+.totals_table {
+	table-layout:fixed;
+	width:auto;
+}
+
+.totals_table td {
+	padding: 5px;
 }
 
 .round_table td {

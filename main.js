@@ -8,7 +8,7 @@ var status = "";
 var lobby = "-";
 var nextTime = 0;
 var round = 0;
-var knownStatuses = ["announce", "registration", "wait", "playpart", "playall", "pause"];
+var knownStatuses = ["announce", "registration", "wait", "playpart", "playall", "pause", "end"];
 
 var winds = ["東", "南", "西", "北"];
 var tours = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
@@ -59,11 +59,13 @@ function playa() {
     $(".playa").show();
     $(".lobby").text(lobby);
     $(".lobby").attr("href", "http://tenhou.net/0/?" + lobby);
+    updateResults();
 }
 
 function end() {
     $("div:not(.end) , p:not(.end) , table:not(.end)").hide();
     $(".end").show();
+    updateTotals();
 }
 
 function updateApplications() {
@@ -135,19 +137,20 @@ function updateResults() {
       //$item->name, $item->start_points, $item->end_points
       var html = "<tr>";
       var deltaCounter = 0;
-      for (var i = 0; i < maxRounds && deltaCounter < data.data.length; i++) {
+      for (var i = 0; i < maxRounds && deltaCounter < data.data.results.length; i++) {
         html+="<td><table class=\"round_table\"><tr><td>";
         html+=tours[i];
         html+="</td></tr>";
         html+="<tr><td><table border=\"1\">";
         var lastBoard = 1;
         var counter = 0;
- outer: while (deltaCounter + counter < data.data.length) {
+        var currentRound = i + 1;
+ outer: while (deltaCounter + counter < data.data.results.length) {
           var found = filter == "";
           if (!found) {
             for (var k = 0; k < playerPerTable; k++) {
-              var values = data.data[deltaCounter + counter + k];
-              var name = values[1];
+              var values = data.data.results[deltaCounter + counter + k];
+              var name = values[2];
               if (name == filter) {
                 found = true;
                 break;
@@ -155,22 +158,26 @@ function updateResults() {
             }
           }
           if (found) {
-            var board = data.data[deltaCounter + counter][0];
-            if (board < lastBoard) {
+            var round = data.data.results[deltaCounter + counter][0];
+            var board = data.data.results[deltaCounter + counter][1];
+            if (round != currentRound) {
               break outer;
             }
             lastBoard = board;
             for (var k = 0; k < playerPerTable; k++) {
-              var values = data.data[deltaCounter + counter + k];
-              var name = values[1];
-              var start = values[2];
-              var score = values[3];
+              var values = data.data.results[deltaCounter + counter + k];
+              var name = values[2];
+              var start = values[3];
+              var score = values[4];
+              var url = data.data.replays[round] != null ? data.data.replays[round][board] : null;
               html+="<tr>";
               if (k == 0) {
                 html+="<td rowspan=\"4\">" + (counter / playerPerTable + 1) + "</td>";
               }
               html+="<td>"+winds[k]+"</td><td>";
-              html += name;
+              if (url != null && name != null) html += "<a target=\"_blank\" href=\"http://tenhou.net/0/?log=" + url + "&tw=" + k + "\">";
+              html += name == null ? "—" : name;
+              if (url != null && name != null) html += "</a>";
               html+="</td><td>" + (start == null ? "—" : start) + "</td>";
               html+="</td><td>" + (score == null ? "—" : score) + "</td>";
               html+="</tr>";
@@ -181,6 +188,39 @@ function updateResults() {
         deltaCounter += counter;
         html+="</table></td></tr>";
         html+="</table></td>";
+      }
+      html+="</tr>";
+      //console.error(html);
+      $(".results_table > tbody").append(html);
+    }
+  });
+}
+
+function updateTotals() {
+  $.ajax({
+    url: "../api/totals"
+  }).done(function(data) {
+    if (data.status === "ok") {
+      $('.results_table').addClass("totals_table").attr("border", 1);
+      $('.results_table tr').remove();
+      //$item->name, $item->score, $item->place
+      var html = "";
+      for (var i = 0; i < data.data.length; i++) {
+        var values = data.data[i];
+        html += "<tr>";
+        var name = values[0];
+        var score = values[1];
+        var place = parseFloat(values[2]);
+
+        html+="<td>";
+        html+=(i+1);
+        html+="</td><td>";
+        html+=name;
+        html+="</td><td>";
+        html+=score;
+        html+="</td><td>";
+        html+=place;
+        html+="</td></tr>";
       }
       html+="</tr>";
       //console.error(html);
@@ -221,7 +261,7 @@ function updateStatus() {
           case "pause":
           case "playpart": updateUnconfirmations();
           case "playall": updateResults(); break;
-          case "end": break;
+          case "end": updateTotals(); break;
 				}
 			}
 			updateViewport();
@@ -254,6 +294,20 @@ function apply() {
 	    $(".reg_message_error").hide(500);
 		$(".reg_message_network_error").show(500);
     });
+}
+
+function replay() {
+	$.ajax({
+		type: "POST",
+		data: JSON.stringify({ url: $('#replay_url').val(), cheat: $('#cheat').is(':checked') ? 1 : 0}),
+		url: "../api/replay"
+	}).done(function(data) {
+		if (data.status === "ok") {
+		  $(".replay_message_ok").show(500);
+		  $(".replay_form").hide(500);
+		  $("#open_replay").show(500);
+		}
+	});
 }
 
 function report() {
@@ -303,8 +357,16 @@ $(document).ready(function() {
 		$("#submit_report").show(500);
 	});
 
+  $("#open_replay").click(function(){
+	    $(".replay_message_ok").hide(500);
+		$("#open_replay").hide(500);
+		$(".replay_form").show(500);
+		$("#submit_replay").show(500);
+	});
+
 	$("#submit_form").click(apply);
 	$("#submit_report").click(report);
+	$("#submit_replay").click(replay);
 
   $('#filter').on('input', function() {
     var input = $('#filter').val();

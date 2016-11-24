@@ -6,27 +6,29 @@
   <meta http-equiv="Expires" content="-1">
   <meta name="viewport" content="width=device-width" id="viewport" />
   <title>Тестовый риичи-блиц 2016</title>
-  <link rel="stylesheet" type="text/css" href="../main.css?version=3">
+  <link rel="stylesheet" type="text/css" href="../main.css?version=2">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-  <script src="../main.js?version=3"></script>
+  <script src="../main.js?version=2"></script>
 </head>
 
 <body>
 
-  
+
   <div class="com reg ann wait playp playa pause end" style="display: inline-block;">
-  
+
   <h1 class="com">Тестовый риичи-блиц 2016</h1>
- 
+
   <div class="wait"><h3>Ожидаем начала турнира</h3></div>
   <div class="playp"><h3>Идёт запуск столов, не покидайте лобби</h3></div>
   <div class="playa"><h3>Идут игры текущего тура</h3></div>
   <div class="pause"><h3>Перерыв</h3></div>
   <div class="end"><h3>Турнир закончен</h3></div>
 
+  <p class="end">До встречи на Осеннем риичи-блице 26 ноября!</p>
+
   <div class="reg ann">
     <p class="rules reg ann">четыре ханчана, три акадоры, танъяо можно открывать</p>
-    <p class="date reg ann">26 ноября</p>
+    <p class="date reg ann">20 ноября</p>
     <table class="time_table info_table reg ann">
       <tr>
         <td>Москва</td> <td>Екатеринбург</td> <td>Новосибирск</td> <td>Япония</td> <td>Сахалин</td>
@@ -34,17 +36,20 @@
       <tr>
         <td>12:00</td> <td>14:00</td> <td>16:00</td> <td>18:00</td> <td>20:00</td>
       </tr>
+      <tr>
+        <td>18:00</td> <td>20:00</td> <td>22:00</td> <td>24:00</td> <td>26:00</td>
+      </tr>
     </table>
-    <p class="prize reg ann">призовой фонд: 5000 рублей</p>
+    <p class="prize reg ann">призовой фонд: 0 рублей</p>
     <table class="prizes_table info_table reg ann">
       <tr>
         <td>первое место</td> <td>второе место</td> <td>третье место</td>
       </tr>
       <tr>
-        <td>3500 рублей</td> <td>1000 рублей</td> <td>500 рублей</td>
+        <td>0 рублей</td> <td>0 рублей</td> <td>0 рублей</td>
       </tr>
     </table>
-    <p class="prize reg ann">выигрыш можно удвоить, подробности в регламенте (пункт 5.03.2)</p>
+    <p class="prize reg ann">у каждого игрока будет по три возможности выбрать соперника, подробности в регламенте (пункт 5.05)</p>
   </div>
 
   <p class="com reg ann wait playp playa pause end"><a href="reglament.html">Полный регламент</a></p>
@@ -84,10 +89,21 @@
 
   <p class="playp playa pause"><a class="button" id="perform_filter">Показывать только игры игрока:</a><input type="text" id="filter"/></p>
 
-  <table class="playp playa pause info_table results_table">
+  <p class="end">В таблице: итоговая позиция игрока, его ник, сумма очков и среднее место</p>
+
+  <table class="playp playa pause end info_table results_table">
   <tbody>
   </tbody>
 </table>
+
+<p class="playp playa pause end"><a class="button" id="open_replay">Отправить реплей</a></p>
+<p class="replay_message_ok">Реплей успешно отправлен! Скоро он будет добавлен в таблицу результатов.</p>
+<div class="replay_form">
+  <label>Ссылка на реплей:</label><br/>
+  <input type="text" id="replay_url"/><br/>
+  <label class="checkbox_label"><input type="checkbox" id="cheat"/> в игре замечено мошенничество</label><br/>
+  <p class="button" id = "submit_replay">Отправить реплей</p><br/>
+</div>
 
   <p class="com reg ann wait playp playa pause end">Что-то пошло не так? <a class="button" id="open_report">Сообщить</a></p>
   <p class="report_message_ok">Сообщение успешно отправлено!</p>
@@ -105,6 +121,6 @@
   </div>
 
   </div>
-  
+
 </body>
 </html>

@@ -11,6 +11,7 @@ $dbpassword = getenv('OPENSHIFT_MYSQL_DB_PASSWORD');
 $db_name = getenv('OPENSHIFT_GEAR_NAME');
 
 $player_per_table = 4;
+$max_rounds = 4;
 
 Flight::register('db', 'PDO', array("mysql:host=$dbhost;port=$dbport;dbname=$db_name", $dbusername, $dbpassword), function($db) {
   $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
@@ -125,6 +126,7 @@ Flight::route('GET /api/confirmed', function() {
 });
 
 Flight::route('POST /api/confirmed', function() {
+  $params = json_decode(file_get_contents("php://input"), true);
   if (isForbidden($params)) return;
   $conn = Flight::db();
   $data = $conn->query("SELECT id, name FROM registrations WHERE confirmed=1 AND disqual=0");
@@ -151,6 +153,7 @@ Flight::route('GET /api/unconfirmed', function() {
 
 
 Flight::route('POST /api/unconfirmed', function() {
+  $params = json_decode(file_get_contents("php://input"), true);
   if (isForbidden($params)) return;
   $conn = Flight::db();
   $data = $conn->query("SELECT id, name FROM registrations WHERE confirmed=0 AND disqual=0");
@@ -165,6 +168,7 @@ Flight::route('POST /api/unconfirmed', function() {
 
 
 Flight::route('POST /api/wish', function() {
+  $params = json_decode(file_get_contents("php://input"), true);
   if (isForbidden($params)) return;
   $who = $params['who'];
   $withWhom = $params['withWhom'];
@@ -179,9 +183,10 @@ Flight::route('POST /api/wish', function() {
 });
 
 Flight::route('POST /api/remove_wishes', function() {
+  $params = json_decode(file_get_contents("php://input"), true);
   if (isForbidden($params)) return;
   $conn = Flight::db();
-  $data = $conn->query("TRUNCATE TABLE wish");
+  $data = $conn->query("UPDATE wish SET done=1");
 
   if (!$data) {
     Flight::json(['status' => 'error', 'error' => 'query_failed']);
@@ -196,12 +201,26 @@ Flight::route('POST /api/initial_state', function() {
   $conn = Flight::db();
   $playersData = $conn->query("SELECT registrations.id as id, name, SUM(place) as placeSum FROM registrations LEFT JOIN results ON registrations.id=results.player_id WHERE confirmed=1 GROUP BY id");
   $gamesData = $conn->query("SELECT id, round, board, player_id FROM results");
-  //$wishData = $conn->query("SELECT id, who, withWhom FROM wish");
+  $wishData = $conn->query("SELECT id, who, withWhom, done FROM wish");
+  $status = $conn->query("SELECT status, round, time, lobby, delay FROM params WHERE id=1");
 
-  if (!$playersData || !$gamesData) {
+  if (!$playersData || !$gamesData || !$wishData || !$status) {
     Flight::json(['status' => 'error', 'error' => 'query_failed']);
   } else {
-    Flight::json(['status' => 'ok','data' => ['players' => $playersData->fetchAll(), 'games' => $gamesData->fetchAll()]]);
+    Flight::json(['status' => 'ok','data' => ['status' => $status->fetch(), 'players' => $playersData->fetchAll(), 'games' => $gamesData->fetchAll(), 'wish' => $wishData->fetchAll()]]);
+  }
+});
+
+Flight::route('POST /api/unstarted', function() {
+  $params = json_decode(file_get_contents("php://input"), true);
+  if (isForbidden($params)) return;
+  $conn = Flight::db();
+  $data = $conn->query("SELECT id, round, board, player_id FROM results WHERE start_points=NULL");
+
+  if (!$playersData) {
+    Flight::json(['status' => 'error', 'error' => 'query_failed']);
+  } else {
+    Flight::json(['status' => 'ok','data' => $data->fetchAll()]);
   }
 });
 
@@ -264,13 +283,26 @@ Flight::route('POST /api/autounconfirm', function() {
 
 Flight::route('GET /api/results', function() {
   $conn = Flight::db();
-  $data = $conn->query("SELECT board, registrations.name, start_points, end_points FROM results LEFT JOIN registrations ON registrations.id=results.player_id ORDER BY results.id ASC");
+  $data = $conn->query("SELECT round, board, registrations.name, start_points, end_points FROM results LEFT JOIN registrations ON registrations.id=results.player_id ORDER BY results.id ASC");
 
   if (!$data) {
     Flight::json(['status' => 'error', 'error' => 'query_failed']);
   } else {
-    $results = array_map(function($item) { return [$item->board, $item->name, $item->start_points, $item->end_points]; }, $data->fetchAll());
-    Flight::json(['status' => 'ok','data' => $results]);
+    $results = array_map(function($item) { return [$item->round, $item->board, $item->name, $item->start_points, $item->end_points]; }, $data->fetchAll());
+
+    $data = $conn->query("SELECT round, board, url FROM replays");
+
+    if (!$data) {
+      Flight::json(['status' => 'error', 'error' => 'query_failed']);
+    } else {
+      $replays = [];
+      foreach ($data->fetchAll() as $item) {
+        $replays[$item->round][$item->board] = $item->url;
+      }
+      //array_map(function($item) { return [$item->round, $item->board, $item->url]; }, $data->fetchAll());
+      Flight::json(['status' => 'ok','data' => ['results' => $results, 'replays' => $replays]]);
+    }
+    //Flight::json(['status' => 'ok','data' => $results]);
   }
 });
 
@@ -480,11 +512,12 @@ Flight::route('POST /api/result', function() {
 
 Flight::route('GET /api/totals', function() {
   $conn = Flight::db();
-  $data = $conn->query("SELECT name, SUM(end_points) as score FROM registrations LEFT JOIN results ON registrations.id=results.player_id WHERE disqual=0 GROUP BY registrations.id ORDER BY score DESC");
+  $data = $conn->query("SELECT name, SUM(end_points) as score, AVG(place) as place FROM registrations LEFT JOIN results ON registrations.id=results.player_id WHERE disqual=0 GROUP BY registrations.id ORDER BY score DESC");
   if (!$data) {
     Flight::json(['status' => 'error', 'error' => 'query_failed']);
   } else {
-    Flight::json(['status' => 'ok','data' => $data->fetchAll()]);
+    $results = array_map(function($item) { return [$item->name, $item->score, $item->place]; }, $data->fetchAll());
+    Flight::json(['status' => 'ok','data' => $results]);
   }
 });
 
@@ -527,48 +560,80 @@ Flight::route('POST /api/report', function() {
   }
 });
 
-// Flight::route('POST /api/replay', function() {
-//   $conn = Flight::db();
-//
-//   $params = json_decode(file_get_contents("php://input"), true);
-//   if (isForbidden2($params)) {
-//     $url = quote($params['url']);
-//
-//     $data = $conn->query("INSERT INTO replays(url) VALUES($url)");
-//
-//     if (!$data) {
-//       Flight::json(['status' => 'error', 'error' => 'query_failed']);
-//     } else {
-//       Flight::json(['status' => 'ok', 'data' => intval($conn->lastInsertId())]);
-//     }
-//   } else {
-//     $url = quote($params['url']);
-//     $round = $params['round'];
-//     $board = $params['board'];
-//
-//     $data = Flight::db()->query("UPDATE results SET url=$url WHERE round=$round AND board=$board");
-//
-//     if (!$data) {
-//       Flight::json(['status' => 'error', 'error' => 'query_failed']);
-//     } else {
-//       Flight::json(['status' => 'ok']);
-//     }
-//   }
-//
-//
-// });
+Flight::route('POST /api/replay', function() {
+  $conn = Flight::db();
 
-// Flight::route('GET /api/replays', function() {
-//   $conn = Flight::db();
-//   $data = $conn->query("SELECT url FROM replays");
-//
-//   if (!$data) {
-//     Flight::json(['status' => 'error', 'error' => 'query_failed']);
-//   } else {
-//     $results = array_map(function($item) { return $item->url; }, $data->fetchAll());
-//     Flight::json(['status' => 'ok','data' => $results]);
-//   }
-// });
+  $params = json_decode(file_get_contents("php://input"), true);
+  if (isForbidden2($params)) {
+    $url = quote($params['url']);
+    $cheat = $params['cheat'];
+
+    $data = $conn->query("INSERT INTO new_replays(url, cheat) VALUES($url, $cheat)");
+
+    if (!$data) {
+      Flight::json(['status' => 'error', 'error' => 'query_failed']);
+    } else {
+      Flight::json(['status' => 'ok']);
+    }
+  } else {
+    $url = quote($params['url']);
+    $round = $params['round'];
+    $board = $params['board'];
+
+    $data = Flight::db()->query("INSERT INTO replays(round,board,url) VALUES ($round,$board,$url)");
+
+    if (!$data) {
+      Flight::json(['status' => 'error', 'error' => 'query_failed']);
+    } else {
+      Flight::json(['status' => 'ok']);
+    }
+  }
+});
+
+Flight::route('GET /api/replays', function() {
+  $conn = Flight::db();
+  $data = $conn->query("SELECT url FROM replays");
+
+  if (!$data) {
+    Flight::json(['status' => 'error', 'error' => 'query_failed']);
+  } else {
+    $results = array_map(function($item) { return $item->url; }, $data->fetchAll());
+    Flight::json(['status' => 'ok','data' => $results]);
+  }
+});
+
+Flight::route('POST /api/new_replays', function() {
+  $params = json_decode(file_get_contents("php://input"), true);
+  if (isForbidden($params)) return;
+
+  $conn = Flight::db();
+  $data = $conn->query("SELECT * FROM new_replays WHERE done=0");
+
+  if (!$data) {
+    Flight::json(['status' => 'error', 'error' => 'query_failed']);
+  } else {
+    $conn->query("UPDATE new_replays SET done=1");
+    Flight::json(['status' => 'ok', 'data' => $data->fetchAll()]);
+  }
+});
+
+Flight::route('GET /api/cheat_replays_forbidden', function() {
+  $conn = Flight::db();
+
+  $params = json_decode(file_get_contents("php://input"), true);
+  if (isForbidden($params)) return;
+
+  $who = quote($params['name']);
+  $message = quote($params['message']);
+
+  $data = $conn->query("SELECT * FROM new_replays WHERE cheat=1");
+
+  if (!$data) {
+    Flight::json(['status' => 'error', 'error' => 'query_failed']);
+  } else {
+    Flight::json(['status' => 'ok', 'data' => $data]);
+  }
+});
 
 
 Flight::start();
