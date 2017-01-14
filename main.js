@@ -1,3 +1,22 @@
+Array.prototype.includes = Array.prototype.includes||function(searchElement , fromIndex) {
+  'use strict';
+  if (!this) {
+    throw new TypeError('Array.prototype.includes called on null or undefined');
+  }
+
+  if (fromIndex===undefined){
+      var i = this.length;
+      while(i--){
+          if (this[i]===searchElement){return true}
+      }
+  } else {
+      var i = fromIndex, len=this.length;
+      while(i++!==len){ // Addittion on hardware will perform as fast as, if not faster than subtraction
+          if (this[i]===searchElement){return true}
+      }
+  }
+  return false;
+};
 
 var delay = 5000;
 
@@ -8,7 +27,7 @@ var status = "";
 var lobby = "-";
 var nextTime = 0;
 var round = 0;
-var knownStatuses = ["announce", "registration", "wait", "playpart", "playall", "pause", "end"];
+var knownStatuses = ["announce", "registration", "wait", "playpart", "playall", "pause", "end"]; //
 
 var winds = ["東", "南", "西", "北"];
 var tours = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
@@ -172,14 +191,25 @@ function updateResults() {
               var url = data.data.replays[round] != null ? data.data.replays[round][board] : null;
               html+="<tr>";
               if (k == 0) {
-                html+="<td rowspan=\"4\">" + (counter / playerPerTable + 1) + "</td>";
+                html+="<td rowspan=\"4\">" + board + "</td>";
               }
               html+="<td>"+winds[k]+"</td><td>";
               if (url != null && name != null) html += "<a target=\"_blank\" href=\"http://tenhou.net/0/?log=" + url + "&tw=" + k + "\">";
               html += name == null ? "—" : name;
               if (url != null && name != null) html += "</a>";
-              html+="</td><td>" + (start == null ? "—" : start) + "</td>";
-              html+="</td><td>" + (score == null ? "—" : score) + "</td>";
+
+              html+="</td><td>";
+              if (start == null) {
+                html+="—";
+              } else if (score == null) {
+                html+="<font color=\"#909090\">" + start + "</font>";
+              } else {
+                html+=score;
+              }
+              html+="</td>";
+
+              //html+="</td><td>" + (start == null ? "—" : start) + "</td>";
+              //html+="</td><td>" + (score == null ? "—" : score) + "</td>";
               html+="</tr>";
             }
           }

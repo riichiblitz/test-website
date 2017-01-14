@@ -417,13 +417,13 @@ Flight::route('POST /api/unconfirm', function() {
   }
 
   $conn = Flight::db();
-  $sql = "UPDATE registrations SET confirmed=0 WHERE ".implode(' OR ', $values);
+  $sql = "UPDATE registrations SET confirmed=1; UPDATE registrations SET confirmed=0 WHERE ".implode(' OR ', $values);
   $data = $conn->query($sql);
 
   if (!$data) {
     Flight::json(['status' => 'error', 'error' => 'query_failed', 'query' => $sql]);
   } else {
-    Flight::json(['status' => 'ok']);
+    Flight::json(['status' => 'ok', 'query' => $sql]);
   }
 });
 
