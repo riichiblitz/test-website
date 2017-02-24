@@ -26,7 +26,7 @@ th {
 
 .button {
 	cursor: pointer;
-	background-color: #6060AA;
+	background-color: #606060;
 	color: #FFFFFF;
 	display: inline-block;
 	padding-right:20px;
@@ -120,6 +120,6 @@ th {
 }
 
 body {
-	background-color: #E0E0FF;
+	background-color: #E0E0E0;
 	text-align: center;
 }
