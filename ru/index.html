@@ -5,10 +5,10 @@
   <meta http-equiv="Cache-control" content="no-cache">
   <meta http-equiv="Expires" content="-1">
   <meta name="viewport" content="width=device-width" id="viewport" />
-  <title>Теневая Лига</title>
-  <link rel="stylesheet" type="text/css" href="../main.css?version=1">
+  <title>Тестовый риичи-блиц 2017</title>
+  <link rel="stylesheet" type="text/css" href="../main.css?version=6">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-  <script src="../main.js?version=2"></script>
+  <script src="../main.js?version=6"></script>
 </head>
 
 <body>
@@ -16,8 +16,7 @@
 
   <div class="com reg ann wait playp playa pause end" style="display: inline-block;">
 
-  <h1 class="com">Теневая Лига</h1>
-  <h2 class="com">Первый индивидуальный отборочный турнир</h2>
+  <h1 class="com">Тестовый риичи-блиц 2017</h1>
 
   <div class="wait"><h3>Ожидаем начала турнира</h3></div>
   <div class="playp"><h3>Идёт запуск столов, не покидайте лобби</h3></div>
@@ -25,11 +24,11 @@
   <div class="pause"><h3>Перерыв</h3></div>
   <div class="end"><h3>Турнир закончен</h3></div>
 
-  <p class="end">Первые этапы завершены. Ждём всех завтра в 10:00 по Москвовскому времени.</p>
+  <p class="end">До встречи на Весеннем риичи-блице 27 мая!</p>
 
   <div class="reg ann">
-    <p class="rules reg ann">два дня, четыре этапа, двенадцать ханчанов</p>
-    <p class="date reg ann">25 и 26 февраля</p>
+    <p class="rules reg ann">четыре ханчана, три акадоры, танъяо можно открывать</p>
+    <p class="date reg ann">22 апреля</p>
     <table class="time_table info_table reg ann">
       <tr>
         <td>Москва</td> <td>Екатеринбург</td> <td>Новосибирск</td> <td>Япония</td> <td>Сахалин</td>
@@ -38,14 +37,52 @@
         <td>10:00</td> <td>12:00</td> <td>14:00</td> <td>16:00</td> <td>18:00</td>
       </tr>
     </table>
+    <p class="prize reg ann">призовой фонд: 5000 рублей</p>
+    <table class="prizes_table info_table reg ann">
+      <tr>
+        <td>первое место</td> <td>второе место</td> <td>третье место</td>
+      </tr>
+      <tr>
+        <td>0 рублей</td> <td>0 рублей</td> <td>0 рублей</td>
+      </tr>
+    </table>
+    <p class="prize reg ann">выигрыш можно удвоить, подробности в регламенте (пункт 5.03.2)</p>
   </div>
 
   <p class="com reg ann wait playp playa pause end"><a href="reglament.html">Полный регламент</a></p>
   <p class="end"><a href="results.html">Все игры турнира</a></p>
   <p class="playp playa pause"><a href="totals.html">Предварительные результаты турнира</a></p>
-  <p class="ann">Регистрация будет открыта 25 января!<br/></p>
+  <p class="ann">Регистрация будет открыта 17 апреля!<br/></p>
 
-  <p class="reg">Регистрация закрыта. Ждём участников здесь после завершения риичи-блица.</p>
+  <p class="reg"><a class="button" id="open_form">Подать заявку</a></p>
+
+  <div class="register_form">
+    <label>Ник на tenhou.net:</label><br/>
+    <input type="text" id="tenhou_nick"/><br/>
+    <label>Контактные данные (заполните, если собираетесь победить):</label><br/>
+    <input type="text" id="contacts"/><br/>
+	<label class="checkbox_label"><input type="checkbox" id="discord_check"/> хочу общаться во время турнира (<a target="_blank" href="discord.html">как это?</a>)</label><br/>
+	<div class="discord_">
+		<label>Ник в Discord на сервере <a target="_blank" href="https://discord.gg/Jn7sJHC">riichiblitz</a>:</label><br/>
+		<input type="text" id="discordName"/><br/>
+		<label>Числовой идентификатор (<a target="_blank" href="discord.html#discriminator">где его найти?</a>)</label><br/>
+		<input type="text" id="discriminator"/><br/>
+	</div>
+	<label class="checkbox_label"><input type="checkbox" id="offline_check"/> хочу играть вживую (<a target="_blank" href="offline.html">как это?</a>)</label><br/>
+	<div class="offline_">
+		<label>Подробнее (в каком городе, клубе, месте? кто ещё там будет? кто организует? кого пригласите? нужна ли помощь?)</label><br/>
+		<input type="text" id="offline"/><br/>
+    </div>
+	<label class="checkbox_label"><input type="checkbox" id="anonymous"/> спрятать мой ник из всех списков до начала турнира</label><br/>
+    <label class="checkbox_label"><input type="checkbox" id="notify" checked/> напомнить мне за сутки до начала турнира</label><br/>
+    <label class="checkbox_label"><input type="checkbox" id="news" checked/> сообщить мне об открытии регистрации на следующий турнир</label><br/>
+    <p class="button" id = "submit_form">Отправить заявку</p><br/>
+  </div>
+
+
+  <p class="reg_message_ok">Заявка успешна отправлена. Ждём Вас на турнире!</p>
+  <p class="reg_message_error">Этот ник уже заявлен. Ждём Вас на турнире!</p>
+  <p class="reg_message_network_error">Произошла ошибка. Попробуйте отправить заявку чуть позже.</p>
 
   <p class="wait pause">Следующий тур начнётся в <a class="time"></a> МСК</p>
   <p class="wait playp playa pause">Ожидаем игроков в лобби <a target="_blank" class="lobby"></a></p>

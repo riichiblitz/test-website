@@ -156,26 +156,15 @@ function updateResults() {
       //$item->name, $item->start_points, $item->end_points
       var html = "<tr>";
       var deltaCounter = 0;
-      var startRound = Math.max(0, round - 4);
-      for (var i = 0; i < data.data.results.length; i += playerPerTable) {
-        if (data.data.results[i][0] == startRound + 1) {
-          deltaCounter = i;
-          break;
-        }
-      }
       for (var i = 0; i < maxRounds && deltaCounter < data.data.results.length; i++) {
         html+="<td><table class=\"round_table\"><tr><td>";
-        html+=tours[startRound + i];
+        html+=tours[i];
         html+="</td></tr>";
         html+="<tr><td><table border=\"1\">";
         var lastBoard = 1;
         var counter = 0;
-        var currentRound = startRound + i + 1;
+        var currentRound = i + 1;
  outer: while (deltaCounter + counter < data.data.results.length) {
-          // if (roundOfGame < startRound) {
-          //   counter += playerPerTable;
-          //   continue;
-          // }
           var found = filter == "";
           if (!found) {
             for (var k = 0; k < playerPerTable; k++) {
@@ -188,9 +177,9 @@ function updateResults() {
             }
           }
           if (found) {
-            var roundOfGame = data.data.results[deltaCounter + counter][0];
+            var round = data.data.results[deltaCounter + counter][0];
             var board = data.data.results[deltaCounter + counter][1];
-            if (roundOfGame != currentRound) {
+            if (round != currentRound) {
               break outer;
             }
             lastBoard = board;
@@ -199,7 +188,7 @@ function updateResults() {
               var name = values[2];
               var start = values[3];
               var score = values[4];
-              var url = data.data.replays[roundOfGame] != null ? data.data.replays[roundOfGame][board] : null;
+              var url = data.data.replays[round] != null ? data.data.replays[round][board] : null;
               html+="<tr>";
               if (k == 0) {
                 html+="<td rowspan=\"4\">" + board + "</td>";
@@ -318,30 +307,31 @@ function updateViewport() {
 }
 
 function apply() {
-  $.ajax({
+	$.ajax({
 		type: "POST",
-		data: JSON.stringify({ name: $('#tenhou_nick').val(), contacts: $('#contacts').val(), notify: 0, anonymous: 0, news: 0 }),
-		url: "http://blitz-riichi.rhcloud.com/api/apply"
-	}).always(function() {
-    $.ajax({
-  		type: "POST",
-  		data: JSON.stringify({ name: $('#tenhou_nick').val(), contacts: $('#contacts').val(), notify: $('#notify').is(':checked') ? 1 : 0, anonymous: $('#anonymous').is(':checked') ? 1 : 0, news: $('#news').is(':checked') ? 1 : 0 }),
-  		url: "../api/apply"
-  	}).done(function(data) {
-  		$(".reg_message_network_error").hide(500);
-  		$(".register_form").hide(500);
-  		if (data.status === "ok") {
-  			$(".reg_message_ok").show(500);
-  		} else {
-  			$(".reg_message_error").show(500);
-  		}
-  		updateApplications();
-  	}).fail(function() {
-  	    $(".reg_message_error").hide(500);
-  		$(".reg_message_network_error").show(500);
-      });
-	});
-
+		data: JSON.stringify({
+			name: $('#tenhou_nick').val(),
+			contacts: $('#contacts').val(),
+			notify: $('#notify').is(':checked') ? 1 : 0,
+			anonymous: $('#anonymous').is(':checked') ? 1 : 0,
+			news: $('#news').is(':checked') ? 1 : 0,
+			discordName: $('#discord_check').is(':checked') ? $('#discordName').val() : null,
+			discriminator: $('#discord_check').is(':checked') ? $('#discriminator').val() : null,
+			offline: $('#offline_check').is(':checked') ? $('#offline').val() : null}),
+		url: "../api/apply"
+	}).done(function(data) {
+		$(".reg_message_network_error").hide(500);
+		$(".register_form").hide(500);
+		if (data.status === "ok") {
+			$(".reg_message_ok").show(500);
+		} else {
+			$(".reg_message_error").show(500);
+		}
+		updateApplications();
+	}).fail(function() {
+	    $(".reg_message_error").hide(500);
+		$(".reg_message_network_error").show(500);
+    });
 }
 
 function replay() {
@@ -391,6 +381,7 @@ function formatTime(time) {
 
 $(document).ready(function() {
 	$("div:not(.com) , p:not(.com) , table:not(.com)").hide(0);
+	$(".discord_ , .offline_").hide(0);
 
 	$("#open_form").click(function(){
 		$("#open_form").hide(500);
@@ -410,6 +401,22 @@ $(document).ready(function() {
 		$("#open_replay").hide(500);
 		$(".replay_form").show(500);
 		$("#submit_replay").show(500);
+	});
+	
+	$("#discord_check").click(function(){
+	    if ($('#discord_check').is(':checked')) {
+			$(".discord_ ").show(500);
+		} else {
+			$(".discord_ ").hide(500);
+		}
+	});
+	
+	$("#offline_check").click(function(){
+	    if ($('#offline_check').is(':checked')) {
+			$(".offline_ ").show(500);
+		} else {
+			$(".offline_ ").hide(500);
+		}
 	});
 
 	$("#submit_form").click(apply);

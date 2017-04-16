@@ -199,7 +199,7 @@ Flight::route('POST /api/initial_state', function() {
   $params = json_decode(file_get_contents("php://input"), true);
   if (isForbidden($params)) return;
   $conn = Flight::db();
-  $playersData = $conn->query("SELECT registrations.id as id, name, SUM(place) as placeSum FROM registrations LEFT JOIN results ON registrations.id=results.player_id WHERE confirmed=1 GROUP BY id");
+  $playersData = $conn->query("SELECT registrations.id as id, name, discordName, discriminator, offline, SUM(place) as placeSum FROM registrations LEFT JOIN results ON registrations.id=results.player_id WHERE confirmed=1 GROUP BY id");
   $gamesData = $conn->query("SELECT id, round, board, player_id FROM results");
   $wishData = $conn->query("SELECT id, who, withWhom, done FROM wish");
   $status = $conn->query("SELECT status, round, time, lobby, delay FROM params WHERE id=1");
@@ -532,12 +532,14 @@ Flight::route('POST /api/apply', function() {
   $notify = $params['notify'];
   $anonymous = $params['anonymous'];
   $news = $params['news'];
+  $discordName = quote($params['discordName']);
+  $discriminator = quote($params['discriminator']);
+  $offline = quote($params['offline']);
   $lang = quote(getallheaders()['Accept-Language']);
-  $query = "INSERT INTO registrations(name, contacts, notify, anonymous, news, lang) VALUES($name, $contacts, $notify, $anonymous, $news, $lang)";
-  $data = $conn->query("INSERT INTO registrations(name, contacts, notify, anonymous, news, lang) VALUES($name, $contacts, $notify, $anonymous, $news, $lang)");
+  $data = $conn->query("INSERT INTO registrations(name, contacts, notify, anonymous, discordName, discriminator, offline, news, lang) VALUES($name, $contacts, $notify, $anonymous, $discordName, $discriminator, $offline, $news, $lang)");
 
   if (!$data) {
-    Flight::json(['status' => 'error', 'error' => 'query_failed', 'query' => $query]);
+    Flight::json(['status' => 'error', 'error' => 'query_failed']);
   } else {
     Flight::json(['status' => 'ok', 'data' => intval($conn->lastInsertId())]);
   }
