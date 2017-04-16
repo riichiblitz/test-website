@@ -1,4 +1,5 @@
 RewriteEngine On
+RewriteCond %{REQUEST_URI} \.(jpg|jpeg|gif|png|ico)$ [NC]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^api(.*)$ index.php [QSA,L]
@@ -8,5 +9,5 @@ RewriteRule ^ru/discord(.*)$ ru/discord.html [QSA,L]
 RewriteRule ^ru/offline(.*)$ ru/offline.html [QSA,L]
 RewriteRule ^ru/results(.*)$ ru/results.html [QSA,L]
 RewriteRule ^ru/totals(.*)$ ru/totals.html [QSA,L]
-RewriteRule ^ru/img/discord_1(.*)$ ru/img/discord_1.png [QSA,L]
-RewriteRule ^ru/(.*)$ ru/index.html [QSA,L]
+RewriteRule ^ru/img/(.*)$ ru/img/$1 [QSA,L]
+RewriteRule ^ru(.*)$ ru/index.html [QSA,L]
