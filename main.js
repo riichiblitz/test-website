@@ -378,6 +378,22 @@ function formatTime(time) {
     return hours+':'+minutes;
 }
 
+var blink_count = 3;
+
+function blink() {
+	if (blink_count-- == 0) {
+		return;
+	}
+	$("#discord_check").parent().animate({
+		    fontSize: "13pt"
+	}, 500, 'linear', blink_back);
+}
+
+function blink_back() {
+	$("#discord_check").parent().animate({
+		    fontSize: "12pt"
+	}, 500, 'linear', blink);
+}
 
 $(document).ready(function() {
 	$("div:not(.com) , p:not(.com) , table:not(.com)").hide(0);
@@ -387,6 +403,9 @@ $(document).ready(function() {
 		$("#open_form").hide(500);
 		$(".register_form").show(500);
 		$("#submit_form").show(500);
+		setTimeout(blink, 500);
+		//blink();
+		
 	});
 
 	$("#open_report").click(function(){
