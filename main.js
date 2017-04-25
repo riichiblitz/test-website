@@ -96,7 +96,10 @@ function updateApplications() {
 			$('.applicant_names').text("");
 			if (data.data.names.length > 0) {
 				data.data.names.forEach(function(item, i, arr) {
-					$('.applicant_names').append(item);
+					$('.applicant_names').append(item[0]);
+					if (item[1] == 1) {
+						$('.applicant_names').append('●');
+					}
 					if (i < arr.length - 1) {
 						$('.applicant_names').append(' ');
 					}

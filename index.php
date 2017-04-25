@@ -98,7 +98,7 @@ Flight::route('POST /api/status', function() {
 
 Flight::route('GET /api/registrations', function() {
   $conn = Flight::db();
-  $data = $conn->query("SELECT name FROM registrations WHERE anonymous=0");
+  $data = $conn->query("SELECT name, discordName, discriminator FROM registrations WHERE anonymous=0");
 
   if (!$data) {
     Flight::json(['status' => 'error', 'error' => 'query_failed']);
@@ -107,7 +107,7 @@ Flight::route('GET /api/registrations', function() {
     if (!$count) {
       Flight::json(['status' => 'error', 'error' => 'query_failed']);
     } else {
-      $names = array_map(function($item) { return $item->name; }, $data->fetchAll());
+      $names = array_map(function($item) { return [$item->name, ($item->discordName != null && $item->discriminator != null ? 1 : 0)]; }, $data->fetchAll());
       Flight::json(['status' => 'ok','data' => ['count' => $count->fetch()->count, 'names' => $names]]);
     }
   }
